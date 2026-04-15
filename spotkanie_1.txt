@@ -1,0 +1,21 @@
+15.04
+
+Dzisiaj odbyło się pierwsze spotkanie organizacyjne na którym omówiliśmy wstępne założenia z projektu.
+ Poruszyliśmy następujące tematy
+-Nazwa aplikacji
+-Nazwa kodowa 
+-Plan działania nad dokumentacją
+-Podział zadań do wykonania (No to a to ja bym wywalił, co my chcemy dzielić jak jeszcze nie mamy języka wybranego.)
+
+
+
+
+
+
+Kolejne spotkanie ustalono na piątek (17.04)
+ Planowane kwestie do poruszenia
+
+
+1. Język i technologię w których będziemy tworzyć naszą aplikacje 
+2. // możesz dodać coś przed piątkiem to sobie przeczytam i przygotuje na przeanalizowanie tematu.
+
