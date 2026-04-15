@@ -1,0 +1,53 @@
+AKADEMIA NAUK STOSOWANYCH W NOWYM SĄCZU
+
+Nazwa kodowa
+• Nazwa projektu: TransitHub
+• Kryptonim projektu: TH-Core-BETA
+
+Cel projektu
+Głównym celem projektu TransitHub jest zaprojektowanie i implementacja relacyjnej bazy danych wraz z warstwą aplikacyjną, która zautomatyzuje zarządzanie przedsiębiorstwem transportowym. System integruje logistykę przejazdów, zarządzanie zasobami ludzkimi oraz nowoczesną obsługę klienta.
+
+Problemy, które projekt rozwiązuje:
+• Optymalizacja wykorzystania floty: Dzięki ewidencji pojazdów i ich stanu technicznego, system zapobiega przypisywaniu niesprawnych jednostek do tras.
+• Eliminacja konfliktów w grafikach: Mechanizmy walidacji na poziomie bazy danych uniemożliwiają przypisanie jednego kierowcy do dwóch różnych tras w tym samym czasie.
+• Dynamiczne zarządzanie sprzedażą: Monitorowanie liczby wolnych miejsc w czasie rzeczywistym zapobiega problemowi nadmiarowej sprzedaży biletów (overbooking).
+• Centralizacja danych: Zastąpienie rozproszonych arkuszy kalkulacyjnych jedną, spójną strukturą zawierającą dane o przystankach, liniach i pracownikach.
+
+Analiza wymagań
+3.1. Wymagania funkcjonalne
+Wymagania określające konkretne operacje, które system musi umożliwić użytkownikom:
+• Moduł Pasażera:
+– Wyszukiwanie połączeń na podstawie daty oraz relacji (miasto A - miasto B).
+
+DOKUMENTACJA PROJEKTOWA - BAZY DANYCH
+3
+
+[STRONA 3 - Kontynuacja Wymagań Funkcjonalnych, Niefunkcjonalne i Integracyjne]
+
+AKADEMIA NAUK STOSOWANYCH W NOWYM SĄCZU
+
+– Rezerwacja i zakup biletu online z generowaniem unikalnego kodu QR.
+– Panel użytkownika z historią podróży i możliwością zwrotu biletu.
+
+• Moduł Kierowcy:
+– Dostęp do elektronicznej karty drogowej i aktualnego grafiku.
+– Raportowanie zdarzeń losowych (opóźnienia, awarie, zmiany trasy).
+
+• Moduł Administratora:
+– Zarządzanie siatką połączeń, przystankami oraz cennikami biletów.
+– Zarządzanie kadrą pracowniczą oraz ewidencja floty autobusowej.
+
+3.2. Wymagania niefunkcjonalne
+Wymagania określające cechy jakościowe systemu:
+• Integralność danych: Zastosowanie kluczy obcych i więzów spójności (Constraints) w celu zachowania logicznej poprawności danych.
+• Wydajność: Czas odpowiedzi bazy danych na zapytania o rozkład jazdy nie powinien przekraczać 2 sekund przy obciążeniu do 100 jednoczesnych zapytań.
+• Bezpieczeństwo: Szyfrowanie haseł użytkowników oraz pełna zgodność z regulacjami RODO w zakresie przechowywania danych osobowych.
+• Dostępność: Interfejs wykonany w technologii Responsive Web Design (RWD), zapewniający wygodę pracy na urządzeniach mobilnych i stacjonarnych.
+
+3.3. Wymagania integracyjne
+Interfejsy łączące system z zewnętrznymi usługami:
+• API Płatności: Integracja z zewnętrznym operatorem (np. Stripe/PayU) w celu bezpiecznej obsługi transakcji bez przechowywania danych kart płatniczych w lokalnej bazie.
+• Usługi Mapowe: Wykorzystanie Google Maps API do wizualizacji tras oraz geolokalizacji przystanków.
+• System Powiadomień: Integracja z bramką SMTP/SMS do wysyłania potwierdzeń rezerwacji i alertów o zmianach w rozkładzie.
+
+DOKUMENTACJA PROJEKTOWA - BAZY DANYCH
