@@ -1,33 +1,43 @@
 package com.example.demo;
 
-import com.example.demo.model.Bus;
-import com.example.demo.repository.BusRepository;
+import com.example.demo.model.*;
+import com.example.demo.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-@Component // To mówi Springowi: "Zajmij się tą klasą"
+@Component
 public class DataInitializer implements CommandLineRunner {
 
-    @Autowired // To "wstrzykuje" repozytorium, żebyś mógł go używać
-    private BusRepository busRepository;
+    @Autowired private BusRepository busRepository;
+    @Autowired private DriverRepository driverRepository;
+    @Autowired private StopRepository stopRepository;
 
     @Override
     public void run(String... args) throws Exception {
-        // Sprawdzamy, czy w bazie są już jakieś autobusy
         if (busRepository.count() == 0) {
-            System.out.println(">>> Baza jest pusta. Dodaję testowy autobus...");
-
+            // Dodajemy Autobus
             Bus bus = new Bus();
             bus.setPlateNumber("KNS 12345");
-            bus.setCapacity(50);
             bus.setModel("Mercedes Tourismo");
+            bus.setCapacity(50);
+            busRepository.save(bus);
 
-            busRepository.save(bus); // Zapisujemy do bazy danych PostgreSQL
+            // Dodajemy Kierowcę
+            Driver driver = new Driver();
+            driver.setFirstName("Jan");
+            driver.setLastName("Kowalski");
+            driver.setLicenseNumber("D/998877");
+            driver.setStatus("AKTYWNY");
+            driverRepository.save(driver);
 
-            System.out.println(">>> Pomyślnie zapisano autobus: " + bus.getPlateNumber());
-        } else {
-            System.out.println(">>> Autobusy są już w bazie, nie dodaję nowych.");
+            // Dodajemy Przystanek
+            Stop stop = new Stop();
+            stop.setName("Dworzec Główny");
+            stop.setCity("Nowy Sącz");
+            stopRepository.save(stop);
+
+            System.out.println(">>> Baza została zainicjalizowana testowymi danymi!");
         }
     }
 }

@@ -12,6 +12,6 @@ public class Stop {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String cityName;
-    private String streetName;
+    private String name;
+    private String city;
 }
