@@ -1,121 +1,103 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  // Tutaj przechowujemy to, co użytkownik wpisze w formularz
+  const [skad, setSkad] = useState('')
+  const [dokad, setDokad] = useState('')
+  const [data, setData] = useState('')
+
+  // Ta funkcja uruchomi się po kliknięciu "Szukaj połączeń"
+  const handleSearch = (e) => {
+    e.preventDefault(); // Zapobiega przeładowaniu strony
+    alert(`Szukam trasy: ${skad} -> ${dokad} na dzień ${data}`);
+    // Tu w Fazie 3 podepniemy prawdziwe zapytanie do bazy Kamila
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      
+      {/* --- PASEK NAWIGACJI (NAVBAR) --- */}
+      <nav className="bg-blue-600 text-white p-4 shadow-md">
+        <div className="container mx-auto flex justify-between items-center">
+          <h1 className="text-2xl font-bold tracking-wider">TransitHub</h1>
+          <div className="space-x-6">
+            <a href="#" className="hover:text-blue-200 transition">Rozkład jazdy</a>
+            <a href="#" className="hover:text-blue-200 transition">Moje bilety</a>
+            <button className="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold hover:bg-blue-50 transition">
+              Zaloguj się
+            </button>
+          </div>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
+      </nav>
+
+      {/* --- GŁÓWNA SEKCJA (HERO & FORMULARZ) --- */}
+      <main className="flex-grow flex flex-col items-center justify-center p-6 bg-gradient-to-b from-blue-600 to-gray-50">
+        
+        <div className="text-center mb-10">
+          <h2 className="text-4xl font-extrabold text-white mb-4 shadow-sm">
+            Wygodne podróże na wyciągnięcie ręki
+          </h2>
+          <p className="text-blue-100 text-lg">
+            Kupuj bilety online, sprawdzaj trasy i podróżuj bez stresu.
           </p>
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
 
-      <div className="ticks"></div>
+        <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-3xl">
+          <form onSubmit={handleSearch} className="space-y-6">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Pole: Skąd */}
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">Skąd odjeżdżasz?</label>
+                <input 
+                  type="text" 
+                  value={skad}
+                  onChange={(e) => setSkad(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  placeholder="np. Warszawa"
+                  required
+                />
+              </div>
+              
+              {/* Pole: Dokąd */}
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">Dokąd jedziesz?</label>
+                <input 
+                  type="text" 
+                  value={dokad}
+                  onChange={(e) => setDokad(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  placeholder="np. Kraków"
+                  required
+                />
+              </div>
+            </div>
+            
+            {/* Pole: Data */}
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Data wyjazdu</label>
+              <input 
+                type="date" 
+                value={data}
+                onChange={(e) => setData(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                required
+              />
+            </div>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+            {/* Przycisk wyszukiwania */}
+            <button 
+              type="submit" 
+              className="w-full mt-4 bg-orange-500 text-white font-bold text-lg py-4 rounded-lg hover:bg-orange-600 transform hover:scale-[1.02] transition-all shadow-md"
+            >
+              Znajdź połączenie
+            </button>
+
+          </form>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      </main>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    </div>
   )
 }
 
