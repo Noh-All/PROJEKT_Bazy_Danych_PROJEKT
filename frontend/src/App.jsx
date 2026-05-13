@@ -1,22 +1,29 @@
 import { useState } from 'react'
 
 function App() {
-  // Tutaj przechowujemy to, co użytkownik wpisze w formularz
   const [skad, setSkad] = useState('')
   const [dokad, setDokad] = useState('')
   const [data, setData] = useState('')
+  
+  // NOWOŚĆ: Stan przechowujący wyniki wyszukiwania (na razie pusta lista)
+  const [wyniki, setWyniki] = useState([])
 
-  // Ta funkcja uruchomi się po kliknięciu "Szukaj połączeń"
   const handleSearch = (e) => {
-    e.preventDefault(); // Zapobiega przeładowaniu strony
-    alert(`Szukam trasy: ${skad} -> ${dokad} na dzień ${data}`);
-    // Tu w Fazie 3 podepniemy prawdziwe zapytanie do bazy Kamila
+    e.preventDefault();
+    
+    // Zamiast alertu, symulujemy pobranie danych z bazy Kamila!
+    // Wrzucamy do "wyników" dwa przykładowe połączenia:
+    setWyniki([
+      { id: 1, odjazd: '08:00', przyjazd: '10:30', przewoznik: 'TransitExpress', cena: '45 PLN' },
+      { id: 2, odjazd: '11:15', przyjazd: '14:00', przewoznik: 'InterCity Bus', cena: '55 PLN' },
+      { id: 3, odjazd: '15:30', przyjazd: '17:45', przewoznik: 'Polskie Linie', cena: '39 PLN' }
+    ]);
   }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       
-      {/* --- PASEK NAWIGACJI (NAVBAR) --- */}
+      {/* Pasek Nawigacji */}
       <nav className="bg-blue-600 text-white p-4 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold tracking-wider">TransitHub</h1>
@@ -30,10 +37,11 @@ function App() {
         </div>
       </nav>
 
-      {/* --- GŁÓWNA SEKCJA (HERO & FORMULARZ) --- */}
-      <main className="flex-grow flex flex-col items-center justify-center p-6 bg-gradient-to-b from-blue-600 to-gray-50">
+      {/* Główna sekcja */}
+      <main className="grow flex flex-col items-center p-6 bg-linear-to-b from-blue-600 to-gray-50">
         
-        <div className="text-center mb-10">
+        {/* Tekst powitalny */}
+        <div className="text-center mt-10 mb-10">
           <h2 className="text-4xl font-extrabold text-white mb-4 shadow-sm">
             Wygodne podróże na wyciągnięcie ręki
           </h2>
@@ -42,11 +50,10 @@ function App() {
           </p>
         </div>
 
-        <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-3xl">
+        {/* Formularz */}
+        <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-3xl mb-10">
           <form onSubmit={handleSearch} className="space-y-6">
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Pole: Skąd */}
               <div>
                 <label className="block text-gray-700 font-medium mb-2">Skąd odjeżdżasz?</label>
                 <input 
@@ -58,8 +65,6 @@ function App() {
                   required
                 />
               </div>
-              
-              {/* Pole: Dokąd */}
               <div>
                 <label className="block text-gray-700 font-medium mb-2">Dokąd jedziesz?</label>
                 <input 
@@ -73,7 +78,6 @@ function App() {
               </div>
             </div>
             
-            {/* Pole: Data */}
             <div>
               <label className="block text-gray-700 font-medium mb-2">Data wyjazdu</label>
               <input 
@@ -85,18 +89,42 @@ function App() {
               />
             </div>
 
-            {/* Przycisk wyszukiwania */}
             <button 
               type="submit" 
-              className="w-full mt-4 bg-orange-500 text-white font-bold text-lg py-4 rounded-lg hover:bg-orange-600 transform hover:scale-[1.02] transition-all shadow-md"
+              className="w-full mt-4 bg-orange-500 text-white font-bold text-lg py-4 rounded-lg hover:bg-orange-600 transform hover:scale-[1.02] transition-all shadow-md cursor-pointer"
             >
               Znajdź połączenie
             </button>
-
           </form>
         </div>
-      </main>
 
+        {/* NOWOŚĆ: Sekcja wyników wyszukiwania (pojawia się tylko, gdy są wyniki) */}
+        {wyniki.length > 0 && (
+          <div className="w-full max-w-3xl space-y-4 pb-10">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4">Dostępne połączenia:</h3>
+            
+            {/* Mapowanie (wypisywanie) wyników na ekran */}
+            {wyniki.map((trasa) => (
+              <div key={trasa.id} className="bg-white p-6 rounded-xl shadow-md flex justify-between items-center border-l-4 border-orange-500 hover:shadow-lg transition">
+                <div>
+                  <div className="text-xl font-bold text-gray-800">
+                    {trasa.odjazd} <span className="text-gray-400 font-normal mx-2">➔</span> {trasa.przyjazd}
+                  </div>
+                  <div className="text-gray-500 mt-1 text-sm">{trasa.przewoznik}</div>
+                </div>
+                
+                <div className="flex flex-col items-end">
+                  <div className="text-2xl font-bold text-blue-600 mb-2">{trasa.cena}</div>
+                  <button className="bg-blue-100 text-blue-700 px-6 py-2 rounded-lg font-semibold hover:bg-blue-200 transition cursor-pointer">
+                    Kup bilet
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+      </main>
     </div>
   )
 }
