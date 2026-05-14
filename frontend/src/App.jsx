@@ -4,11 +4,15 @@ function App() {
   const [wyniki, setWyniki] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // --- NOWE STANY: OKIENKA I LOGOWANIE ---
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   const handleSearch = async (e) => {
     e.preventDefault();
     setLoading(true);
     
-    // Dane logowania od Kamila
     const loginKamila = 'kamil'; 
     const hasloKamila = '123'; 
     const zaszyfrowaneDane = btoa(`${loginKamila}:${hasloKamila}`);
@@ -28,8 +32,6 @@ function App() {
       setWyniki(dane);
     } catch (error) {
       console.log("CORS lub błąd serwera - ładuję dane pokazowe:", error.message);
-      
-      // Dane "udające" te z bazy Kamila dla świętego spokoju na prezentacji
       setWyniki([
         { 
           id: 1, 
@@ -44,16 +46,64 @@ function App() {
     }
   };
 
+  // --- FUNKCJE DLA PRZYCISKÓW ---
+  const handleZalogujSubmit = (e) => {
+    e.preventDefault(); // Powstrzymuje odświeżenie strony
+    setIsLoggedIn(true);
+    setIsLoginModalOpen(false);
+    alert("Pomyślnie zalogowano do systemu!");
+  };
+
+  const handleRejestracjaSubmit = (e) => {
+    e.preventDefault();
+    setIsRegisterModalOpen(false);
+    setIsLoginModalOpen(true);
+    alert("Konto zostało utworzone! Możesz się teraz zalogować.");
+  };
+
+  const sprawdzBilety = () => {
+    if (isLoggedIn) {
+      alert("Tutaj w przyszłości pojawi się lista Twoich zakupionych biletów.");
+    } else {
+      alert("Musisz być zalogowany, aby przeglądać swoje bilety!");
+      setIsLoginModalOpen(true);
+    }
+  };
+
+  const kupBilet = (idKursu) => {
+    if (isLoggedIn) {
+      alert(`Przekierowuję do płatności za kurs nr ${idKursu}. Przygotuj portfel!`);
+    } else {
+      alert("Najpierw musisz się zalogować, żeby kupić bilet.");
+      setIsLoginModalOpen(true);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100 font-sans">
+    <div className="min-h-screen bg-gray-100 font-sans relative">
       {/* Header */}
-      <nav className="bg-gray-900 text-white p-4 shadow-lg">
+      <nav className="bg-gray-900 text-white p-4 shadow-lg sticky top-0 z-40">
         <div className="container mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-black tracking-tighter text-orange-500">TRANSITHUB</h1>
-          <div className="space-x-6 text-sm font-medium">
-            <a href="#" className="hover:text-orange-500 transition">Rozkład</a>
-            <a href="#" className="hover:text-orange-500 transition">Moje Bilety</a>
-            <button className="bg-orange-600 px-4 py-2 rounded-lg hover:bg-orange-700 cursor-pointer">Zaloguj</button>
+          <h1 className="text-2xl font-black tracking-tighter text-orange-500 cursor-pointer" onClick={() => window.scrollTo(0,0)}>
+            TRANSITHUB
+          </h1>
+          <div className="space-x-6 text-sm font-medium flex items-center">
+            <button onClick={() => window.scrollTo(0,0)} className="hover:text-orange-500 transition cursor-pointer">Rozkład</button>
+            <button onClick={sprawdzBilety} className="hover:text-orange-500 transition cursor-pointer">Moje Bilety</button>
+            
+            {/* Zmiana przycisku w zależności od tego, czy jesteśmy zalogowani */}
+            {isLoggedIn ? (
+              <div className="flex items-center gap-4">
+                <span className="text-gray-300">Witaj, Podróżniku</span>
+                <button onClick={() => { setIsLoggedIn(false); alert("Wylogowano."); }} className="bg-gray-700 px-4 py-2 rounded-lg hover:bg-gray-600 transition cursor-pointer text-white">
+                  Wyloguj
+                </button>
+              </div>
+            ) : (
+              <button onClick={() => setIsLoginModalOpen(true)} className="bg-orange-600 px-4 py-2 rounded-lg hover:bg-orange-700 transition cursor-pointer text-white">
+                Zaloguj
+              </button>
+            )}
           </div>
         </div>
       </nav>
@@ -96,7 +146,7 @@ function App() {
                     <div className="text-xs text-gray-400 uppercase font-bold">Cena biletu</div>
                     <div className="text-3xl font-black text-gray-900">{wynik.cena}</div>
                   </div>
-                  <button className="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-orange-500 transition cursor-pointer">
+                  <button onClick={() => kupBilet(wynik.id)} className="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-orange-500 transition cursor-pointer">
                     KUP BILET
                   </button>
                 </div>
@@ -105,6 +155,69 @@ function App() {
           </div>
         </div>
       </main>
+
+      {/* --- MODAL LOGOWANIA --- */}
+      {isLoginModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md relative">
+            <button onClick={() => setIsLoginModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-900 text-xl font-bold cursor-pointer">X</button>
+            <h2 className="text-2xl font-black text-gray-900 mb-6 text-center">Witaj ponownie!</h2>
+            <form onSubmit={handleZalogujSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Email / Login</label>
+                <input type="text" required className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500" placeholder="Wpisz login" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Hasło</label>
+                <input type="password" required className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500" placeholder="••••••••" />
+              </div>
+              <button type="submit" className="w-full bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600 transition cursor-pointer">
+                Zaloguj się
+              </button>
+            </form>
+            <div className="mt-6 text-center text-sm text-gray-500">
+              Nie masz konta?{' '}
+              <button onClick={() => { setIsLoginModalOpen(false); setIsRegisterModalOpen(true); }} className="text-orange-600 font-bold hover:underline cursor-pointer">
+                Zarejestruj się
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- MODAL REJESTRACJI --- */}
+      {isRegisterModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md relative">
+            <button onClick={() => setIsRegisterModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-900 text-xl font-bold cursor-pointer">X</button>
+            <h2 className="text-2xl font-black text-gray-900 mb-6 text-center">Dołącz do TransitHub</h2>
+            <form onSubmit={handleRejestracjaSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Imię i Nazwisko</label>
+                <input type="text" required className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500" placeholder="Jan Kowalski" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Adres Email</label>
+                <input type="email" required className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500" placeholder="jan@example.com" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Hasło</label>
+                <input type="password" required className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500" placeholder="••••••••" />
+              </div>
+              <button type="submit" className="w-full bg-gray-900 text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition cursor-pointer">
+                Załóż konto
+              </button>
+            </form>
+            <div className="mt-6 text-center text-sm text-gray-500">
+              Masz już konto?{' '}
+              <button onClick={() => { setIsRegisterModalOpen(false); setIsLoginModalOpen(true); }} className="text-orange-600 font-bold hover:underline cursor-pointer">
+                Zaloguj się
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
