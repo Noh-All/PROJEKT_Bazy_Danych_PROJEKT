@@ -8,6 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/przystanki")
+@CrossOrigin(origins = "http://localhost:5173")
 public class PrzystanekController {
 
     private final PrzystanekRepository przystanekRepository;
