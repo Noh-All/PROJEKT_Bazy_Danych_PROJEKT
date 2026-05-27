@@ -23,11 +23,23 @@ public class UzytkownikController {
         return ResponseEntity.ok(zapisany);
     }
 
-    // --- LOGOWANIE ---
+   // --- LOGOWANIE ---
     @PostMapping("/logowanie")
-    public ResponseEntity<String> zaloguj() {
-        // Skoro Wasz system zabezpieczeń (Basic Auth) i tak sprawdza hasło przy wejściu,
-        // to jeśli kod dotrze do tego miejsca, oznacza to, że dane są poprawne!
-        return ResponseEntity.ok("{\"status\": \"zalogowano\"}");
+    public ResponseEntity<String> zaloguj(@RequestBody Uzytkownik daneLogowania) {
+        // 1. Pobieramy wszystkich użytkowników z bazy danych
+        Iterable<Uzytkownik> wszyscyUzytkownicy = uzytkownikRepository.findAll();
+
+        // 2. Szukamy czy jest tam ktoś z takim samym loginem i hasłem
+        for (Uzytkownik u : wszyscyUzytkownicy) {
+            if (u.getLogin() != null && u.getLogin().equals(daneLogowania.getLogin()) &&
+                u.getHaslo() != null && u.getHaslo().equals(daneLogowania.getHaslo())) {
+                
+                // Znaleziono! Wpuszczamy.
+                return ResponseEntity.ok("{\"status\": \"zalogowano\"}");
+            }
+        }
+
+        // 3. Jeśli pętla się skończy i nikogo nie znajdzie - odrzucamy! (Błąd 401)
+        return ResponseEntity.status(401).body("{\"status\": \"błąd logowania\"}");
     }
 }
