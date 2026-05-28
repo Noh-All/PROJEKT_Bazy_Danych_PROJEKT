@@ -9,6 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/bilety")
@@ -25,12 +29,12 @@ public class BiletController {
     private BiletRepository biletRepository;
 
     @PostMapping("/kup")
-    public ResponseEntity<?> kupBilet(@RequestBody java.util.Map<String, Object> payload) {
+    public ResponseEntity<?> kupBilet(@RequestBody Map<String, Object> payload) {
         String login = (String) payload.get("login_uzytkownika");
-        java.util.List<?> idKursowRaw = (java.util.List<?>) payload.get("id_kursow");
+        List<?> idKursowRaw = (List<?>) payload.get("id_kursow");
         
         if (login == null || idKursowRaw == null) {
-            return ResponseEntity.badRequest().body("{\"error\": \"Brak wymaganych danych w żądaniu JSON\"}");
+            return ResponseEntity.badRequest().body("{\"error\": \"Brak danych\"}");
         }
 
         com.example.demo.model.Uzytkownik pasazer = null;
@@ -42,10 +46,11 @@ public class BiletController {
         }
         
         if (pasazer == null) {
-            return ResponseEntity.status(404).body("{\"error\": \"Nie znaleziono zalogowanego użytkownika w bazie danych!\"}");
+            return ResponseEntity.status(404).body("{\"error\": \"Nie znaleziono usera\"}");
         }
         
-        java.util.List<Bilet> zapisaneBilety = new java.util.ArrayList<>();
+        List<String> wygenerowaneKody = new ArrayList<>();
+        
         for (Object obj : idKursowRaw) {
             Integer idKursu = Integer.valueOf(obj.toString()); 
             java.util.Optional<Kurs> oKurs = kursRepository.findById(idKursu);
@@ -56,16 +61,38 @@ public class BiletController {
                 nowyBilet.setKurs(oKurs.get());
                 nowyBilet.setStatus_platnosci("Opłacony"); 
                 nowyBilet.setCena_koncowa(oKurs.get().getCena_bazowa()); 
-                
-                // Generujemy unikalne dane wymagane przez Twoją bazę:
                 nowyBilet.setNumer_miejsca((int)(Math.random() * 40) + 1); 
-                nowyBilet.setKod_qr(UUID.randomUUID().toString()); 
+                
+                // --- TO JEST KLUCZ: GENEROWANIE KODU QR ---
+                String qrKod = UUID.randomUUID().toString();
+                nowyBilet.setKod_qr(qrKod); 
                 
                 biletRepository.save(nowyBilet);
-                zapisaneBilety.add(nowyBilet);
+                wygenerowaneKody.add(qrKod);
             }
         }
         
-        return ResponseEntity.ok("{\"status\": \"sukces\", \"zapisano_biletow\": " + zapisaneBilety.size() + "}");
+        // Zwracamy kody do Reacta!
+        Map<String, Object> odpowiedz = new HashMap<>();
+        odpowiedz.put("status", "sukces");
+        odpowiedz.put("kody_qr", wygenerowaneKody);
+        return ResponseEntity.ok(odpowiedz);
+    }
+
+    @PostMapping("/skanuj")
+    public ResponseEntity<?> skanujBilet(@RequestBody Map<String, String> payload) {
+        String kodQr = payload.get("kod_qr");
+
+        for (Bilet b : biletRepository.findAll()) {
+            if (kodQr.equals(b.getKod_qr())) {
+                if ("Wykorzystany".equalsIgnoreCase(b.getStatus_platnosci())) {
+                    return ResponseEntity.badRequest().body("{\"error\": \"Ten bilet został już skasowany!\"}");
+                }
+                b.setStatus_platnosci("Wykorzystany");
+                biletRepository.save(b);
+                return ResponseEntity.ok("{\"message\": \"Bilet ważny! Zmieniono status na Wykorzystany.\"}");
+            }
+        }
+        return ResponseEntity.status(404).body("{\"error\": \"Błąd weryfikacji! Brak w bazie.\"}");
     }
 }
