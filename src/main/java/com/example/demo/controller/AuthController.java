@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:5173") // Przepustka dla Reacta Marcina
+@CrossOrigin(origins = "*") // Przepustka dla Reacta Marcina
 public class AuthController {
 
     private final UzytkownikService uzytkownikService;

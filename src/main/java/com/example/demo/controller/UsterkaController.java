@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/usterki")
-@CrossOrigin(origins = "http://localhost:5173") // Przepustka dla Marcina!
+@CrossOrigin(origins = "*") // Przepustka dla Marcina!
 public class UsterkaController {
 
     private final UsterkaRepository usterkaRepository;

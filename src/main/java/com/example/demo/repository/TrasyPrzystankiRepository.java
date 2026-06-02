@@ -7,5 +7,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TrasyPrzystankiRepository extends JpaRepository<TrasyPrzystanki, TrasyPrzystankiKlucz> {
-    // Tutaj jako drugi parametr podajemy nasz klucz złożony
 }

@@ -34,4 +34,7 @@ public class Kurs {
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal cena_bazowa;
+
+    @Column(length = 20)
+    private String status_kursu = "ZAPLANOWANY"; // Może być: ZAPLANOWANY, W TRAKCIE, ZAKONCZONY
 }

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 
 function ClientPortal() {
-  // --- STANY APLIKACJI ---
   const [wyniki, setWyniki] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -22,14 +21,55 @@ function ClientPortal() {
   
   const [mojeBilety, setMojeBilety] = useState([]);
 
-  // --- NOWE STANY DO PŁATNOŚCI ---
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [ticketToPay, setTicketToPay] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('blik');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [blikCode, setBlikCode] = useState('');
 
-  // --- WYSZUKIWANIE KURSÓW ---
+  // --- POBIERANIE BILETÓW Z BAZY ---
+  const pobierzBiletyZSerwera = async (userLogin) => {
+    const adminAuth = btoa('kamil:123'); 
+    try {
+      const res = await fetch(`http://localhost:8080/api/bilety/moje?login=${userLogin}`, {
+        headers: { 'Authorization': `Basic ${adminAuth}` }
+      });
+      if (res.ok) {
+        const zapisaneBilety = await res.json();
+        setMojeBilety(zapisaneBilety);
+      }
+    } catch (err) {
+      console.error("Błąd pobierania biletów z bazy.");
+    }
+  };
+
+  // --- NOWE: FUNKCJA DO ANULOWANIA BILETU ---
+  const handleAnulujBilet = async (kodQr) => {
+    if (!window.confirm("Czy na pewno chcesz anulować ten bilet? Środki zostaną zwrócone na Twoje konto (lub kartę).")) {
+      return;
+    }
+    
+    const adminAuth = btoa('kamil:123');
+    try {
+      const res = await fetch(`http://localhost:8080/api/bilety/anuluj/${kodQr}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Basic ${adminAuth}` }
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        alert(`✅ Sukces: ${data.message}`);
+        // Automatyczne odświeżenie biletów po usunięciu
+        pobierzBiletyZSerwera(loginInput);
+      } else {
+        alert(`❌ Błąd: ${data.error}`);
+      }
+    } catch (err) {
+      alert("Błąd połączenia z serwerem podczas anulowania biletu.");
+    }
+  };
+
   const handleSearch = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -38,24 +78,19 @@ function ClientPortal() {
     try {
       const odpowiedz = await fetch(`http://localhost:8080/api/kursy/szukaj?skad=${skadInput}&dokad=${dokadInput}`, {
         method: 'GET',
-        headers: {
-          'Authorization': `Basic ${adminAuth}`,
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Authorization': `Basic ${adminAuth}`, 'Content-Type': 'application/json' }
       });
       
       if (!odpowiedz.ok) throw new Error(`Błąd: ${odpowiedz.status}`);
       const dane = await odpowiedz.json();
       setWyniki(dane);
     } catch (error) {
-      console.log("Błąd serwera przy szukaniu.");
       setWyniki([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // --- LOGOWANIE I REJESTRACJA ---
   const handleZalogujSubmit = async (e) => {
     e.preventDefault(); 
     const adminAuth = btoa('kamil:123'); 
@@ -66,9 +101,16 @@ function ClientPortal() {
         body: JSON.stringify({ login: loginInput, haslo: hasloInput })
       });
       if (odpowiedz.ok) {
-        setIsLoggedIn(true); setIsLoginModalOpen(false); alert(`Witaj ponownie, ${loginInput}!`);
-      } else { alert("Błędny login lub hasło! Spróbuj ponownie."); }
-    } catch (error) { alert("Błąd połączenia z serwerem."); }
+        setIsLoggedIn(true); 
+        setIsLoginModalOpen(false); 
+        alert(`Witaj ponownie, ${loginInput}!`);
+        pobierzBiletyZSerwera(loginInput);
+      } else { 
+        alert("Błędny login lub hasło! Spróbuj ponownie."); 
+      }
+    } catch (error) { 
+      alert("Błąd połączenia z serwerem."); 
+    }
   };
 
   const handleRejestracjaSubmit = async (e) => {
@@ -86,7 +128,6 @@ function ClientPortal() {
     } catch (error) { alert("Błąd połączenia."); }
   };
 
-  // --- INICJACJA PŁATNOŚCI ---
   const zainicjujPlatnosc = (opcjaPodrozy) => {
     if (!isLoggedIn) {
       alert("Najpierw musisz się zalogować, żeby przejść do kasy.");
@@ -99,12 +140,10 @@ function ClientPortal() {
     setIsPaymentModalOpen(true);
   };
 
-  // --- SYMULACJA BRAMKI I ZAPIS DO BAZY ---
   const finalizujPłatnosc = async (e) => {
     e.preventDefault();
     if (paymentMethod === 'blik' && blikCode.length !== 6) {
-      alert("Kod BLIK musi mieć 6 cyfr!");
-      return;
+      alert("Kod BLIK musi mieć 6 cyfr!"); return;
     }
 
     setIsProcessingPayment(true);
@@ -120,7 +159,6 @@ function ClientPortal() {
         });
 
         if (odpowiedz.ok) {
-          // Odbieramy kody QR z bazy danych
           const daneZSerwera = await odpowiedz.json();
           const biletGotowy = { ...ticketToPay, kody_qr: daneZSerwera.kody_qr };
           
@@ -229,7 +267,7 @@ function ClientPortal() {
         </div>
       </main>
 
-      {/* --- NOWY MODAL PŁATNOŚCI --- */}
+      {/* --- MODAL PŁATNOŚCI --- */}
       {isPaymentModalOpen && ticketToPay && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
           <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md relative">
@@ -248,15 +286,9 @@ function ClientPortal() {
                 
                 <form onSubmit={finalizujPłatnosc} className="space-y-6">
                   <div className="grid grid-cols-3 gap-2">
-                    <div onClick={() => setPaymentMethod('blik')} className={`border-2 rounded-xl p-3 text-center cursor-pointer font-bold transition ${paymentMethod === 'blik' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
-                      BLIK
-                    </div>
-                    <div onClick={() => setPaymentMethod('przelew')} className={`border-2 rounded-xl p-3 text-center cursor-pointer font-bold transition ${paymentMethod === 'przelew' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
-                      Przelew
-                    </div>
-                    <div onClick={() => setPaymentMethod('karta')} className={`border-2 rounded-xl p-3 text-center cursor-pointer font-bold transition ${paymentMethod === 'karta' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
-                      Karta
-                    </div>
+                    <div onClick={() => setPaymentMethod('blik')} className={`border-2 rounded-xl p-3 text-center cursor-pointer font-bold transition ${paymentMethod === 'blik' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>BLIK</div>
+                    <div onClick={() => setPaymentMethod('przelew')} className={`border-2 rounded-xl p-3 text-center cursor-pointer font-bold transition ${paymentMethod === 'przelew' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>Przelew</div>
+                    <div onClick={() => setPaymentMethod('karta')} className={`border-2 rounded-xl p-3 text-center cursor-pointer font-bold transition ${paymentMethod === 'karta' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>Karta</div>
                   </div>
 
                   <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 min-h-[100px] flex flex-col justify-center">
@@ -267,9 +299,7 @@ function ClientPortal() {
                       </div>
                     )}
                     {paymentMethod === 'przelew' && (
-                      <div className="text-center text-gray-600 text-sm">
-                        Zostaniesz przekierowany do strony swojego banku po kliknięciu "Zapłać".
-                      </div>
+                      <div className="text-center text-gray-600 text-sm">Zostaniesz przekierowany do strony swojego banku po kliknięciu "Zapłać".</div>
                     )}
                     {paymentMethod === 'karta' && (
                       <div className="space-y-3">
@@ -292,18 +322,18 @@ function ClientPortal() {
         </div>
       )}
 
-      {/* --- MODAL MOJE BILETY Z KODEM QR --- */}
+      {/* --- MODAL MOJE BILETY Z KODEM QR ORAZ PRZYCISKIEM ZWROTU --- */}
       {isMyTicketsModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
           <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-3xl relative max-h-[85vh] overflow-y-auto">
             <button onClick={() => setIsMyTicketsModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-900 text-2xl font-bold cursor-pointer">×</button>
             <h2 className="text-3xl font-black text-gray-900 mb-6 border-b pb-4">Twoje Bilety z QR</h2>
             {mojeBilety.length === 0 ? (
-              <div className="text-center text-gray-500 py-10">Nie masz jeszcze żadnych kupionych biletów.</div>
+              <div className="text-center text-gray-500 py-10">Nie masz aktywnych biletów na swoim koncie.</div>
             ) : (
               <div className="space-y-6">
                 {mojeBilety.map((bilet, idx) => (
-                  <div key={idx} className="border border-gray-300 p-6 rounded-2xl flex flex-col md:flex-row gap-6 items-center bg-gray-50 shadow-sm">
+                  <div key={idx} className="border border-gray-300 p-6 rounded-2xl flex flex-col md:flex-row gap-6 items-center bg-gray-50 shadow-sm relative">
                     <div className="flex-1 w-full space-y-4 border-r border-dashed border-gray-300 pr-6">
                       <div className="font-bold text-xl text-gray-800 border-b pb-2 text-center md:text-left">Opłacona Podróż</div>
                       {bilet.kursy.map((kurs, index) => (
@@ -318,7 +348,15 @@ function ClientPortal() {
                       {bilet.kody_qr && bilet.kody_qr.length > 0 && (
                         <>
                           <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${bilet.kody_qr[0]}`} alt="Kod QR pierwszego biletu" className="rounded-lg shadow border" />
-                          <div className="text-xs text-gray-500 mt-2 text-center">Pokaż kod przy wejściu</div>
+                          <div className="text-xs text-gray-500 mt-2 mb-2 text-center">Pokaż kod przy wejściu</div>
+                          
+                          {/* PRZYCISK ANULOWANIA BILETU */}
+                          <button 
+                            onClick={() => handleAnulujBilet(bilet.kody_qr[0])}
+                            className="mt-2 text-xs font-bold text-red-500 hover:text-white border border-red-500 hover:bg-red-500 py-1.5 px-3 rounded transition cursor-pointer w-full text-center"
+                          >
+                            Anuluj (Zwrot Kasy)
+                          </button>
                         </>
                       )}
                     </div>

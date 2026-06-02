@@ -10,7 +10,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/uzytkownicy")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class UzytkownikController {
 
     @Autowired
@@ -63,5 +63,15 @@ public class UzytkownikController {
         resp.put("status", "sukces");
         resp.put("haslo_startowe", "start123");
         return ResponseEntity.ok(resp);
+    }
+
+    @GetMapping
+    public Iterable<com.example.demo.model.Uzytkownik> pobierzWszystkich() {
+        return uzytkownikRepository.findAll();
+    }
+
+    @DeleteMapping("/usun/{id}")
+    public void usunPracownika(@PathVariable Integer id) {
+        uzytkownikRepository.deleteById(id);
     }
 }

@@ -4,10 +4,12 @@ import com.example.demo.model.RaportBiletowy;
 import com.example.demo.repository.BiletRepository;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/raporty")
-@CrossOrigin(origins = "http://localhost:5173") // Przepustka dla Marcina!
+@CrossOrigin(origins = "*")
 public class RaportController {
 
     private final BiletRepository biletRepository;
@@ -19,16 +21,15 @@ public class RaportController {
     @GetMapping("/podsumowanie")
     public RaportBiletowy pobierzPodsumowanie() {
         RaportBiletowy raport = new RaportBiletowy();
-
-        // 1. Zlicza wszystkie bilety w bazie
         raport.setLiczbaBiletow(biletRepository.count());
-
-        // 2. Pobiera Twoją sumę z repozytorium
         BigDecimal suma = biletRepository.zsumujCalkowityPrzychod();
-
-        // 3. Zabezpieczenie: jeśli baza jest pusta, wysyłamy 0 zamiast błędu
         raport.setSumaZarobkow(suma != null ? suma : BigDecimal.ZERO);
-
         return raport;
+    }
+
+    // --- NOWY ENDPOINT: Wysyła szczegółowe dane do nowej tabelki w Reactcie ---
+    @GetMapping("/trasy")
+    public List<Map<String, Object>> pobierzRaportTras() {
+        return biletRepository.raportDlaPojedynczychTras();
     }
 }
